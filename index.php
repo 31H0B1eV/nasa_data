@@ -4,14 +4,16 @@ ini_set('display_startup_errors',1);
 error_reporting(-1);
 
 getImageArray();
-//saveImage($pic);
 
 $im = new Imagick();
 $im->setFormat('GIF');
 
 $frameCount = 0;
-$files = glob('img/*.{jpg,png,gif}', GLOB_BRACE);
+$files =  glob('img/*.jpeg');
+var_dump($files);
+
 foreach($files as $pic) {
+    if($pic == "." || $pic == "..") continue;
     $frame = new Imagick($pic);
     $frame->thumbnailImage(600, 600);
     $im->addImage($frame);
@@ -48,7 +50,7 @@ function saveImage($img)
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $response= curl_exec ($ch);
         curl_close($ch);
-        $file_name = "img/".$k.".jpeg";
+        $file_name = "./img/".substr($k, 0, -3).".jpeg"; // .".jpeg"
         $file = fopen($file_name , 'w') or die("X_x");
         fwrite($file, $response);
         fclose($file);
