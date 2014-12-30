@@ -1,4 +1,5 @@
 <?php
+ini_set('max_execution_time', 300);
 ini_set('display_errors',1);
 ini_set('display_startup_errors',1);
 error_reporting(-1);
@@ -29,7 +30,7 @@ function getImageArray()
 {
     $images = array();
     $timestamp = '2014-12-30%2000:00:00.0';
-    $num = '10';
+    $num = '20';
     $url = 'http://iswa.gsfc.nasa.gov/IswaSystemWebApp/CygnetLastNInstancesServlet?cygnetId=251&endTimestamp='. $timestamp . '&lastN=' . $num;
 
     $result = json_decode(file_get_contents($url), TRUE);
