@@ -4,29 +4,33 @@ ini_set('display_errors',1);
 ini_set('display_startup_errors',1);
 error_reporting(-1);
 
-getImageArray();
-
-$files =  glob('img/*.jpeg');
-var_dump($files);
+getImages('2014-12-31', '5');
+createGif('2014');
 
 /**
- * @param $file_name array of files
- * @param $date array with index 0 => as startDate and 1 => as endDate
- * @throws ErrorException
+ * This function get date string and create giff file for this duration
+ * for example: 2014-12-29 - create for all day,
+ * 2014-12 - create for all month and
+ * 2014-12-29 - create for all year
+ *
+ * You must have images available in your img folder
+ *
+ * For checking result in gif file you can see days in bottom left corner and see which of them contains in animation.
+ *
+ * @param $date
  */
-function createGif($file_name, $date)
+function createGif($date)
 {
-    if(!is_array($date) || !is_array($file_name)) {
-        throw new ErrorException('createGif function parameters must be arrays');
-    } else {
+    $files =  glob('img/*.jpeg');
+    var_dump($files);
+    $im = new Imagick();
+    $im->setFormat('GIF');
 
-        $im = new Imagick();
-        $im->setFormat('GIF');
+    $frameCount = 0;
 
-        $frameCount = 0;
-
-        foreach($file_name as $pic) {
-            if($pic == "." || $pic == "..") continue;
+    foreach($files as $pic) {
+        if($pic == "." || $pic == "..") continue;
+        if (strpos($pic, $date) !== false) {
             $frame = new Imagick($pic);
             $frame->thumbnailImage(600, 600);
             $im->addImage($frame);
@@ -35,16 +39,28 @@ function createGif($file_name, $date)
 
             $frameCount++;
         }
+    }
 
+    try {
         $im->writeImages('img.gif', true);
+    } catch(Exception $e) {
+        echo "You use wrong date string or img file is missing <br />";
+        echo "Error details: " . $e->getMessage();
     }
 }
 
-function getImageArray()
+/**
+ * Call this function for image downloading and save.
+ * you need specify tomorrow day in $last_day just fo including all current day images
+ * but you can use it with any date.
+ *
+ * @param $last_day string value of today + 1( example: '2014-12-31' ), its endTimestamp for get images request.
+ * @param $num string number images for downloading, counting from $last_day
+ */
+function getImages($last_day, $num)
 {
     $images = array();
-    $timestamp = '2014-12-31%2000:00:00.0';
-    $num = '20';
+    $timestamp = $last_day . '%2000:00:00.0';
     $url = 'http://iswa.gsfc.nasa.gov/IswaSystemWebApp/CygnetLastNInstancesServlet?cygnetId=251&endTimestamp='. $timestamp . '&lastN=' . $num;
 
     $result = json_decode(file_get_contents($url), TRUE);
@@ -55,6 +71,14 @@ function getImageArray()
     saveImage($images);
 }
 
+/**
+ * Do not call this function.
+ *
+ * This is just utility function for download image operation
+ * it get images by http get request and if same file not exists in img folder save it.
+ *
+ * @param $img
+ */
 function saveImage($img)
 {
     foreach($img as $k => $v) {
